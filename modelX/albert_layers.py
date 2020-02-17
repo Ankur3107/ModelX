@@ -9,6 +9,247 @@ import six
 import tensorflow as tf
 import layers_utils as tf_utils
 
+class AlbertConfig(object):
+  """Configuration for `AlbertModel`.
+
+  The default settings match the configuration of model `albert_xxlarge`.
+  """
+
+  def __init__(self,
+               vocab_size,
+               embedding_size=128,
+               hidden_size=4096,
+               num_hidden_layers=12,
+               num_hidden_groups=1,
+               num_attention_heads=64,
+               intermediate_size=16384,
+               inner_group_num=1,
+               down_scale_factor=1,
+               hidden_act="gelu",
+               hidden_dropout_prob=0,
+               attention_probs_dropout_prob=0,
+               max_position_embeddings=512,
+               type_vocab_size=2,
+               initializer_range=0.02,
+               backward_compatible=True):
+    """Constructs AlbertConfig.
+    Args:
+      vocab_size: Vocabulary size of `inputs_ids` in `AlbertModel`.
+      embedding_size: size of voc embeddings.
+      hidden_size: Size of the encoder layers and the pooler layer.
+      num_hidden_layers: Number of hidden layers in the Transformer encoder.
+      num_hidden_groups: Number of group for the hidden layers, parameters in
+        the same group are shared.
+      num_attention_heads: Number of attention heads for each attention layer in
+        the Transformer encoder.
+      intermediate_size: The size of the "intermediate" (i.e., feed-forward)
+        layer in the Transformer encoder.
+      inner_group_num: int, number of inner repetition of attention and ffn.
+      down_scale_factor: float, the scale to apply
+      hidden_act: The non-linear activation function (function or string) in the
+        encoder and pooler.
+      hidden_dropout_prob: The dropout probability for all fully connected
+        layers in the embeddings, encoder, and pooler.
+      attention_probs_dropout_prob: The dropout ratio for the attention
+        probabilities.
+      max_position_embeddings: The maximum sequence length that this model might
+        ever be used with. Typically set this to something large just in case
+        (e.g., 512 or 1024 or 2048).
+      type_vocab_size: The vocabulary size of the `token_type_ids` passed into
+        `AlbertModel`.
+      initializer_range: The stdev of the truncated_normal_initializer for
+        initializing all weight matrices.
+    """
+    self.vocab_size = vocab_size
+    self.embedding_size = embedding_size
+    self.hidden_size = hidden_size
+    self.num_hidden_layers = num_hidden_layers
+    self.num_hidden_groups = num_hidden_groups
+    self.num_attention_heads = num_attention_heads
+    self.inner_group_num = inner_group_num
+    self.down_scale_factor = down_scale_factor
+    self.hidden_act = hidden_act
+    self.intermediate_size = intermediate_size
+    self.hidden_dropout_prob = hidden_dropout_prob
+    self.attention_probs_dropout_prob = attention_probs_dropout_prob
+    self.max_position_embeddings = max_position_embeddings
+    self.type_vocab_size = type_vocab_size
+    self.initializer_range = initializer_range
+    self.backward_compatible = backward_compatible
+
+  @classmethod
+  def from_dict(cls, json_object):
+    """Constructs a `BertConfig` from a Python dictionary of parameters."""
+    config = AlbertConfig(vocab_size=None)
+    for (key, value) in six.iteritems(json_object):
+      config.__dict__[key] = value
+    return config
+
+  @classmethod
+  def from_json_file(cls, json_file):
+    """Constructs a `BertConfig` from a json file of parameters."""
+    with tf.io.gfile.GFile(json_file, "r") as reader:
+      text = reader.read()
+    return cls.from_dict(json.loads(text))
+
+  def to_dict(self):
+    """Serializes this instance to a Python dictionary."""
+    output = copy.deepcopy(self.__dict__)
+    return output
+
+  def to_json_string(self):
+    """Serializes this instance to a JSON string."""
+    return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
+
+class AlbertModel(tf.keras.layers.Layer):
+  """ALBERT model ("ALBERT: A Lite BERT for Self-supervised Learning of
+  Language Representations").
+
+  Example usage:
+
+  ```python
+  # Already been converted into WordPiece token ids
+  input_word_ids = tf.constant([[31, 51, 99], [15, 5, 0]])
+  input_mask = tf.constant([[1, 1, 1], [1, 1, 0]])
+  input_type_ids = tf.constant([[0, 0, 1], [0, 2, 0]])
+
+  config = modeling.AlbertConfig(vocab_size=32000, hidden_size=512,
+    num_hidden_layers=8, num_attention_heads=6, intermediate_size=1024)
+
+  pooled_output, sequence_output = modeling.AlbertModel(config=config)(
+    input_word_ids=input_word_ids,
+    input_mask=input_mask,
+    input_type_ids=input_type_ids)
+  ...
+  ```
+  """
+
+  def __init__(self, config, float_type=tf.float32, **kwargs):
+    super(AlbertModel, self).__init__(**kwargs)
+    self.config = (
+        AlbertConfig.from_dict(config)
+        if isinstance(config, dict) else copy.deepcopy(config))
+    self.float_type = float_type
+
+  def build(self, unused_input_shapes):
+    """Implements build() for the layer."""
+    self.embedding_lookup = EmbeddingLookup(
+        vocab_size=self.config.vocab_size,
+        embedding_size=self.config.embedding_size,
+        initializer_range=self.config.initializer_range,
+        dtype=tf.float32,
+        name="word_embeddings")
+    self.embedding_postprocessor = EmbeddingPostprocessor(
+        use_type_embeddings=True,
+        token_type_vocab_size=self.config.type_vocab_size,
+        use_position_embeddings=True,
+        max_position_embeddings=self.config.max_position_embeddings,
+        hidden_size=self.config.hidden_size,
+        dropout_prob=self.config.hidden_dropout_prob,
+        initializer_range=self.config.initializer_range,
+        dtype=tf.float32,
+        name="embedding_postprocessor")
+    self.encoder = Transformer(
+        num_hidden_layers=self.config.num_hidden_layers,
+        hidden_size=self.config.hidden_size,
+        num_attention_heads=self.config.num_attention_heads,
+        intermediate_size=self.config.intermediate_size,
+        intermediate_activation=self.config.hidden_act,
+        hidden_dropout_prob=self.config.hidden_dropout_prob,
+        attention_probs_dropout_prob=self.config.attention_probs_dropout_prob,
+        initializer_range=self.config.initializer_range,
+        backward_compatible=self.config.backward_compatible,
+        float_type=self.float_type,
+        name="encoder")
+    self.pooler_transform = tf.keras.layers.Dense(
+        units=self.config.hidden_size,
+        activation="tanh",
+        kernel_initializer=get_initializer(self.config.initializer_range),
+        name="pooler_transform")
+    super(AlbertModel, self).build(unused_input_shapes)
+
+  def __call__(self,
+               input_word_ids,
+               input_mask=None,
+               input_type_ids=None,
+               **kwargs):
+    inputs = tf_utils.pack_inputs([input_word_ids, input_mask, input_type_ids])
+    return super(AlbertModel, self).__call__(inputs, **kwargs)
+
+  def call(self, inputs, mode="bert", **kwargs):
+    """Implements call() for the layer.
+
+    Args:
+      inputs: packed input tensors.
+      mode: string, `bert` or `encoder`.
+    Returns:
+      Output tensor of the last layer for BERT training (mode=`bert`) which
+      is a float Tensor of shape [batch_size, seq_length, hidden_size] or
+      a list of output tensors for encoder usage (mode=`encoder`).
+    """
+    unpacked_inputs = tf_utils.unpack_inputs(inputs)
+    input_word_ids = unpacked_inputs[0]
+    input_mask = unpacked_inputs[1]
+    input_type_ids = unpacked_inputs[2]
+    word_embeddings = self.embedding_lookup(input_word_ids)
+    embedding_tensor = self.embedding_postprocessor(
+        word_embeddings=word_embeddings, token_type_ids=input_type_ids)
+
+    #temp_model_summary(input_type_ids, embedding_tensor)
+    if self.float_type == tf.float16:
+      embedding_tensor = tf.cast(embedding_tensor, tf.float16)
+    attention_mask = None
+    if input_mask is not None:
+      attention_mask = create_attention_mask_from_input_mask(
+          input_word_ids, input_mask)
+
+    if mode == "encoder":
+      return self.encoder(
+          embedding_tensor, attention_mask, return_all_layers=True)
+    print("embedding_tensor :", embedding_tensor)
+    print("attention_mask :", attention_mask)
+    sequence_output = self.encoder(embedding_tensor, attention_mask)
+    first_token_tensor = tf.squeeze(sequence_output[:, 0:1, :], axis=1)
+    pooled_output = self.pooler_transform(first_token_tensor)
+    return (pooled_output, sequence_output)
+
+  def get_config(self):
+    config = {"config": self.config.to_dict()}
+    base_config = super(AlbertModel, self).get_config()
+    return dict(list(base_config.items()) + list(config.items()))
+
+class ALBertSquadLogitsLayer(tf.keras.layers.Layer):
+    """Returns a layer that computes custom logits for BERT squad model."""
+
+    def __init__(self, initializer=None, float_type=tf.float32, **kwargs):
+        super(ALBertSquadLogitsLayer, self).__init__(**kwargs)
+        self.initializer = initializer
+        self.float_type = float_type
+
+    def build(self, unused_input_shapes):
+        """Implements build() for the layer."""
+        self.final_dense = tf.keras.layers.Dense(
+            units=2, kernel_initializer=self.initializer, name='final_dense')
+        super(ALBertSquadLogitsLayer, self).build(unused_input_shapes)
+
+    def call(self, inputs):
+        """Implements call() for the layer."""
+        sequence_output = inputs
+
+        input_shape = sequence_output.shape.as_list()
+        sequence_length = input_shape[1]
+        num_hidden_units = input_shape[2]
+
+        final_hidden_input = tf.keras.backend.reshape(sequence_output,
+                                                      [-1, num_hidden_units])
+        logits = self.final_dense(final_hidden_input)
+        logits = tf.keras.backend.reshape(logits, [-1, sequence_length, 2])
+        logits = tf.transpose(logits, [2, 0, 1])
+        unstacked_logits = tf.unstack(logits, axis=0)
+        if self.float_type == tf.float16:
+            unstacked_logits = tf.cast(unstacked_logits, tf.float32)
+        return unstacked_logits[0], unstacked_logits[1]
+
 
 class EmbeddingLookup(tf.keras.layers.Layer):
   """Looks up words embeddings for id tensor."""
