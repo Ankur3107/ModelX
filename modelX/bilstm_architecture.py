@@ -59,7 +59,7 @@ class BiLSTMGRUSelfAttention():
         return conc
 
 class BiLSTMGRUMultiHeadAttention():
-    def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128):
+    def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128,head_num=3):
         
         if embedding_matrix is None:
             embedding_matrix = np.zeros((nb_words, embedding_size))
@@ -70,16 +70,17 @@ class BiLSTMGRUMultiHeadAttention():
         self.is_embedding_trainable = is_embedding_trainable
         self.h_lstm = h_lstm
         self.h_gru = h_gru
+        self.head_num = head_num
         
     def __call__(self,pre_layer):
         x = Embedding(self.nb_words, self.embedding_size, weights=[self.embedding_matrix], trainable=self.is_embedding_trainable)(pre_layer)
         x = SpatialDropout1D(0.3)(x)
         
         x1 = MultiHead(Bidirectional(CuDNNLSTM(self.h_lstm, return_sequences=False)),layer_num=3)(x)
-        x1_self = MultiHeadAttention(head_num=3)(x1)
+        x1_self = MultiHeadAttention(head_num=self.head_num)(x1)
     
         x2 = MultiHead(Bidirectional(CuDNNGRU(self.h_gru, return_sequences=False)),layer_num=3)(x)
-        x2_self = MultiHeadAttention(head_num=3)(x2)
+        x2_self = MultiHeadAttention(head_num=self.head_num)(x2)
     
         max_pool1 = GlobalMaxPooling1D()(x1_self)
         max_pool2 = GlobalMaxPooling1D()(x2_self)
