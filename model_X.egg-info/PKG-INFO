@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: model-X
+Version: 0.1.0
+Summary: This package contains collection of models
+Home-page: https://github.com/Ankur3107/ModelX
+Author: Ankur Singh
+Author-email: ankur310794@gmail.com
+License: UNKNOWN
+Description: # ModelX
+        Fork Model and Start Training
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown

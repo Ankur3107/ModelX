@@ -1,0 +1,11 @@
+README.md
+setup.py
+model_X/__init__.py
+model_X/bilstm_architectures.py
+model_X/config.py
+model_X/dense_architectures.py
+model_X/utils.py
+model_X.egg-info/PKG-INFO
+model_X.egg-info/SOURCES.txt
+model_X.egg-info/dependency_links.txt
+model_X.egg-info/top_level.txt

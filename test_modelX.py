@@ -1,5 +1,5 @@
-from modelX.bilstm_architecture import BiLSTMModel
-from modelX.dense_architecture import DenseLayerModel
+from model_X.bilstm_architecture import BiLSTMModel
+from model_X.dense_architecture import DenseLayerModel
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
