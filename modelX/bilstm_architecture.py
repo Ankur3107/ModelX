@@ -2,9 +2,9 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.models import Model, Sequential
 import numpy as np
-from keras_multi_head import MultiHead
-from keras_multi_head import MultiHeadAttention
-from keras_self_attention import SeqSelfAttention
+from utils import MultiHead
+from utils import MultiHeadAttention
+from utils import SeqSelfAttention
 
 class BiLSTMGRUSpatialDropout1D():
     def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128):
@@ -22,8 +22,8 @@ class BiLSTMGRUSpatialDropout1D():
     def __call__(self,pre_layer):
         x = Embedding(self.nb_words, self.embedding_size, weights=[self.embedding_matrix], trainable=self.is_embedding_trainable)(pre_layer)
         x = SpatialDropout1D(0.3)(x)
-        x1 = Bidirectional(CuDNNLSTM(self.h_lstm, return_sequences=True))(x)
-        x2 = Bidirectional(CuDNNGRU(self.h_gru, return_sequences=True))(x1)
+        x1 = Bidirectional(LSTM(self.h_lstm, return_sequences=True))(x)
+        x2 = Bidirectional(GRU(self.h_gru, return_sequences=True))(x1)
         max_pool1 = GlobalMaxPooling1D()(x1)
         max_pool2 = GlobalMaxPooling1D()(x2)
         conc = Concatenate()([max_pool1, max_pool2])
@@ -47,10 +47,10 @@ class BiLSTMGRUSelfAttention():
         x = Embedding(self.nb_words, self.embedding_size, weights=[self.embedding_matrix], trainable=self.is_embedding_trainable)(pre_layer)
         x = SpatialDropout1D(0.3)(x)
         
-        x1 = Bidirectional(CuDNNLSTM(self.h_lstm, return_sequences=True))(x)
+        x1 = Bidirectional(LSTM(self.h_lstm, return_sequences=True))(x)
         x1_self = SeqSelfAttention(attention_activation='sigmoid')(x1)
     
-        x2 = Bidirectional(CuDNNGRU(self.h_gru, return_sequences=True))(x1)
+        x2 = Bidirectional(GRU(self.h_gru, return_sequences=True))(x1)
         x2_self = SeqSelfAttention(attention_activation='sigmoid')(x2)
     
         max_pool1 = GlobalMaxPooling1D()(x1_self)
@@ -76,10 +76,10 @@ class BiLSTMGRUMultiHeadAttention():
         x = Embedding(self.nb_words, self.embedding_size, weights=[self.embedding_matrix], trainable=self.is_embedding_trainable)(pre_layer)
         x = SpatialDropout1D(0.3)(x)
         
-        x1 = MultiHead(Bidirectional(CuDNNLSTM(self.h_lstm, return_sequences=False)),layer_num=3)(x)
+        x1 = MultiHead(Bidirectional(LSTM(self.h_lstm, return_sequences=False)),layer_num=3)(x)
         x1_self = MultiHeadAttention(head_num=self.head_num)(x1)
     
-        x2 = MultiHead(Bidirectional(CuDNNGRU(self.h_gru, return_sequences=False)),layer_num=3)(x)
+        x2 = MultiHead(Bidirectional(GRU(self.h_gru, return_sequences=False)),layer_num=3)(x)
         x2_self = MultiHeadAttention(head_num=self.head_num)(x2)
     
         max_pool1 = GlobalMaxPooling1D()(x1_self)
