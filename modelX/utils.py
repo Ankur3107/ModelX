@@ -1,7 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras import backend as K
 
-
+TF_KERAS = True
 ## Reference: https://github.com/CyberZHG/keras-self-attention/blob/master/keras_self_attention/scaled_dot_attention.py
 
 class ScaledDotProductAttention(keras.layers.Layer):

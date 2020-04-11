@@ -1,6 +1,6 @@
-from keras.layers import *
-from keras.optimizers import *
-from keras.models import Model, Sequential
+from tensorflow.keras.layers import *
+from tensorflow.keras.optimizers import *
+from tensorflow.keras.models import Model, Sequential
 import numpy as np
 
 class DenseLayerModel():

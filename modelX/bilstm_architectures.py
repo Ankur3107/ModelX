@@ -2,9 +2,9 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.models import Model, Sequential
 import numpy as np
-from utils import MultiHead
-from utils import MultiHeadAttention
-from utils import SeqSelfAttention
+from .utils import MultiHead
+from .utils import MultiHeadAttention
+from .utils import SeqSelfAttention
 
 class BiLSTMGRUSpatialDropout1D():
     def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128):
