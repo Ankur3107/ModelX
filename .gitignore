@@ -1,2 +1,4 @@
 *.cpython-37.pyc
 *tar.gz
+*.whl
+*PKG-INFO
