@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
      name='model_X',  
-     version='0.1.1',
+     version='0.1.2',
      author="Ankur Singh",
      author_email="ankur310794@gmail.com",
      description="This package contains collection of models",

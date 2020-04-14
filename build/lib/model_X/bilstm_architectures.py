@@ -30,7 +30,6 @@ class BiLSTMGRUSpatialDropout1D():
         conc = Concatenate()([max_pool1, max_pool2])
         return conc
 
-
 class BiLSTMGRUSelfAttention():
     def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128):
         
@@ -115,7 +114,6 @@ class SplitBiLSTMGRUSpatialDropout1D():
         max_pool_layer = GlobalMaxPooling1D()(conct_layer)
 
         return max_pool_layer
-
 
 class SplitBiLSTMGRU():
     def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm1=256, h_lstm2=512, h_gru=128):

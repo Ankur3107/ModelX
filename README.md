@@ -8,6 +8,11 @@ Model_X package is a collection of different NLP architecture models.
 
 ### a. BiLSTMGRUSpatialDropout1D
 
+    from model_X.bilstm_architectures import *
+    from model_X.dense_architectures import DenseLayerModel
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
+
     input_shape = (100,)
     model_input = Input(shape=input_shape)
     bilstm_layers = BiLSTMGRUSpatialDropout1D(10, 100)(model_input)
@@ -17,6 +22,11 @@ Model_X package is a collection of different NLP architecture models.
     print(full_model.summary())
 
 ### b. BiLSTMGRUSelfAttention
+
+    from model_X.bilstm_architectures import *
+    from model_X.dense_architectures import DenseLayerModel
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
 
     input_shape = (100,)
     model_input = Input(shape=input_shape)
@@ -28,6 +38,11 @@ Model_X package is a collection of different NLP architecture models.
 
 ### c.  BiLSTMGRUMultiHeadAttention
 
+    from model_X.bilstm_architectures import *
+    from model_X.dense_architectures import DenseLayerModel
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
+
     input_shape = (100,)
     model_input = Input(shape=input_shape)
     bilstm_layers = BiLSTMGRUMultiHeadAttention(10, 100)(model_input)
@@ -38,6 +53,11 @@ Model_X package is a collection of different NLP architecture models.
 
 ### d.  SplitBiLSTMGRUSpatialDropout1D
 
+    from model_X.bilstm_architectures import *
+    from model_X.dense_architectures import DenseLayerModel
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
+
     input_shape = (100,)
     model_input = Input(shape=input_shape)
     bilstm_layers = SplitBiLSTMGRUSpatialDropout1D(10, 100)(model_input)
@@ -47,6 +67,11 @@ Model_X package is a collection of different NLP architecture models.
     print(full_model.summary())
 
 ### e.  SplitBiLSTMGRU
+
+    from model_X.bilstm_architectures import *
+    from model_X.dense_architectures import DenseLayerModel
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
 
     input_shape = (100,)
     model_input = Input(shape=input_shape)
@@ -60,6 +85,10 @@ Model_X package is a collection of different NLP architecture models.
 
 
 ### a. DenseLayerModel
+
+    from model_X.dense_architectures import DenseLayerModel
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
 
     input_shape = (100,)
     model_input = Input(shape=input_shape)
