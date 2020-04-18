@@ -30,7 +30,7 @@ Model_X package is a collection of different NLP architecture models.
 
     input_shape = (100,)
     model_input = Input(shape=input_shape)
-    bilstm_layers = BiLSTMGRUSelfAttention(10, 100)(model_input)
+    bilstm_layers = BiLSTMGRUAttention(10, 100)(model_input)
     dense_layers = DenseLayerModel()(bilstm_layers)
     output = Dense(3, activation='softmax')(dense_layers)
     full_model = Model(inputs=model_input, outputs=output)

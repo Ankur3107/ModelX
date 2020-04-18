@@ -2,3 +2,5 @@
 *tar.gz
 *.whl
 *PKG-INFO
+build*
+*.egg-info*
