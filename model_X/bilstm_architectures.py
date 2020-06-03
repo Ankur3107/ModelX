@@ -33,7 +33,7 @@ class BiLSTMGRUSpatialDropout1D():
         return conc
 
 class BiLSTMGRUAttention():
-    def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128, attention_type='SeqSelfAttention'):
+    def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128, attention_type='SeqSelfAttention', return_attention=False, dropout=None):
         
         if embedding_matrix is None:
             embedding_matrix = np.zeros((nb_words, embedding_size))
@@ -45,36 +45,52 @@ class BiLSTMGRUAttention():
         self.h_lstm = h_lstm
         self.h_gru = h_gru
         self.attention_type = attention_type
+        self.return_attention = return_attention
+        self.dropout = dropout
         
     def __call__(self,pre_layer):
         x = Embedding(self.nb_words, self.embedding_size, weights=[self.embedding_matrix], trainable=self.is_embedding_trainable)(pre_layer)
         x = SpatialDropout1D(0.3)(x)
         
         x1 = Bidirectional(LSTM(self.h_lstm, return_sequences=True))(x)
+        
+        if self.dropout:
+            x1 = Dropout(self.dropout)(x1)
+
         if self.attention_type == 'SeqSelfAttention':
-            x1_self = SeqSelfAttention(attention_activation='sigmoid')(x1)
+            x1_self = SeqSelfAttention(attention_activation='sigmoid', return_attention=self.return_attention)(x1)
 
         elif self.attention_type == 'ScaledDotProductAttention':
-            x1_self = ScaledDotProductAttention()(x1)
+            x1_self = ScaledDotProductAttention(return_attention=self.return_attention)(x1)
 
         else:
             print('Attention Type', self.attention_type,' not found !')
     
 
         x2 = Bidirectional(GRU(self.h_gru, return_sequences=True))(x1)
+        if self.dropout:
+            x2 = Dropout(self.dropout)(x2)
+            
         if self.attention_type == 'SeqSelfAttention':
-            x2_self = SeqSelfAttention(attention_activation='sigmoid')(x2)
+            x2_self = SeqSelfAttention(attention_activation='sigmoid', return_attention=self.return_attention)(x2)
 
         elif self.attention_type == 'ScaledDotProductAttention':
-            x2_self = ScaledDotProductAttention()(x2)
+            x2_self = ScaledDotProductAttention(return_attention=self.return_attention)(x2)
             
         else:
             print('Attention Type', self.attention_type,' not found !')
     
-        max_pool1 = GlobalMaxPooling1D()(x1_self)
-        max_pool2 = GlobalMaxPooling1D()(x2_self)
-        conc = Concatenate()([max_pool1, max_pool2])
-        return conc
+        if self.return_attention:
+            max_pool1 = GlobalMaxPooling1D()(x1_self[0])
+            max_pool2 = GlobalMaxPooling1D()(x2_self[0])
+            conc = Concatenate()([max_pool1, max_pool2])
+            return conc, x1_self[1], x2_self[1]
+
+        else:
+            max_pool1 = GlobalMaxPooling1D()(x1_self)
+            max_pool2 = GlobalMaxPooling1D()(x2_self)
+            conc = Concatenate()([max_pool1, max_pool2])
+            return conc
 
 class BiLSTMGRUMultiHeadAttention():
     def __init__(self, nb_words, embedding_size, embedding_matrix=None, is_embedding_trainable=False, h_lstm=256, h_gru=128,head_num=3):
