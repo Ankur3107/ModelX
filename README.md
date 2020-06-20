@@ -1,5 +1,9 @@
 # Model_X
 
+[![Downloads](https://pepy.tech/badge/model-x)](https://pepy.tech/project/model-x)
+[![Downloads](https://pepy.tech/badge/model-x/month)](https://pepy.tech/project/model-x/month)
+[![Downloads](https://pepy.tech/badge/model-x/week)](https://pepy.tech/project/model-x/week)
+
 Model_X package is a collection of different NLP architecture models.
 
 # Implementation
