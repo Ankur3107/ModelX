@@ -4,3 +4,4 @@
 *PKG-INFO
 build*
 *.egg-info*
+.ipynb_checkpoints/*
