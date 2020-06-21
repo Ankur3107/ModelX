@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
      name='model_X',  
-     version='0.1.4',
+     version='0.1.5',
      author="Ankur Singh",
      author_email="ankur310794@gmail.com",
      description="This package contains collection of models",
@@ -13,7 +13,7 @@ setuptools.setup(
      long_description_content_type="text/markdown",
      url="https://github.com/Ankur3107/ModelX",
      packages=['model_X'],
-     install_requires=[], 
+     install_requires=[tensorflow>=2.0.0], 
      classifiers=[
          "Programming Language :: Python :: 3",
          "License :: OSI Approved :: MIT License",

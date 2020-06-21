@@ -102,3 +102,24 @@ Model_X package is a collection of different NLP architecture models.
     print(full_model.summary())
 
 
+## 3 Transformer Architectures
+
+### a. VanillaTransformer
+
+    from transformers_architectures import *
+    from tensorflow.keras.layers import *
+    from tensorflow.keras.models import Model
+    import argparse
+
+    config = argparse.Namespace(vocab_size=1000,
+                            embed_dim=512,
+                            ff_dim=32,
+                            num_heads=8,
+                            rate=0.1,
+                            maxlen=128)
+
+    inputs = tf.keras.layers.Input(shape=(config.maxlen,))
+    pooled_output,sequence_output = VanillaTransformer(config)(inputs)
+    output = Dense(3, activation='softmax')(pooled_output)
+    full_model = Model(inputs=model_input, outputs=output)
+    print(full_model.summary())
