@@ -13,7 +13,7 @@ setuptools.setup(
      long_description_content_type="text/markdown",
      url="https://github.com/Ankur3107/ModelX",
      packages=['model_X'],
-     install_requires=[tensorflow>=2.0.0], 
+     install_requires=[], 
      classifiers=[
          "Programming Language :: Python :: 3",
          "License :: OSI Approved :: MIT License",
