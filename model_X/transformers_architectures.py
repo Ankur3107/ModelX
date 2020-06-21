@@ -1,20 +1,24 @@
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+from transformers_utils import *
 
-embed_dim = 32  # Embedding size for each token
-num_heads = 2  # Number of attention heads
-ff_dim = 32  # Hidden layer size in feed forward network inside transformer
+class VanillaTransformer():
+    def __init__(self, config, embedding_matrix=None, is_embedding_trainable=False, is_position_embedding_trainable=False):
+        if embedding_matrix is None:
+            embedding_matrix = np.zeros((config.vocab_size, config.embed_dim))
 
-inputs = layers.Input(shape=(maxlen,))
-embedding_layer = TokenAndPositionEmbedding(maxlen, vocab_size, embed_dim)
-x = embedding_layer(inputs)
-transformer_block = TransformerBlock(embed_dim, num_heads, ff_dim)
-x = transformer_block(x)
-x = layers.GlobalAveragePooling1D()(x)
-x = layers.Dropout(0.1)(x)
-x = layers.Dense(20, activation="relu")(x)
-x = layers.Dropout(0.1)(x)
-outputs = layers.Dense(2, activation="softmax")(x)
+        self.config = config
+        self.embedding_matrix = embedding_matrix
+        self.is_embedding_trainable = is_embedding_trainable
+        self.is_position_embedding_trainable = is_position_embedding_trainable
 
-model = keras.Model(inputs=inputs, outputs=outputs)
+        self.pooler_transform = tf.keras.layers.Dense(
+                                units=self.config.embed_dim,
+                                activation="tanh",
+                                name="pooler_transform")
+
+    def __call__(self, pre_layer):
+        embedding_layer = TokenAndPositionEmbedding(self.config, self.embedding_matrix, self.is_embedding_trainable, self.is_position_embedding_trainable)(pre_layer)
+        sequence_output = TransformerBlock(self.config)(embedding_layer)
+        first_token_tensor = tf.squeeze(sequence_output[:, 0:1, :], axis=1)
+        pooled_output = self.pooler_transform(first_token_tensor)
+        return (pooled_output,sequence_output)
