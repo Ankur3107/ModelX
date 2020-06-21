@@ -1,9 +1,7 @@
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
 
 
-class MultiHeadSelfAttention(layers.Layer):
+class MultiHeadSelfAttention(tf.keras.layers.Layer):
     def __init__(self, embed_dim, num_heads=8):
         super(MultiHeadSelfAttention, self).__init__()
         self.embed_dim = embed_dim
@@ -13,10 +11,10 @@ class MultiHeadSelfAttention(layers.Layer):
                 f"embedding dimension = {embed_dim} should be divisible by number of heads = {num_heads}"
             )
         self.projection_dim = embed_dim // num_heads
-        self.query_dense = layers.Dense(embed_dim)
-        self.key_dense = layers.Dense(embed_dim)
-        self.value_dense = layers.Dense(embed_dim)
-        self.combine_heads = layers.Dense(embed_dim)
+        self.query_dense = tf.keras.layers.Dense(embed_dim)
+        self.key_dense = tf.keras.layers.Dense(embed_dim)
+        self.value_dense = tf.keras.layers.Dense(embed_dim)
+        self.combine_heads = tf.keras.layers.Dense(embed_dim)
 
     def attention(self, query, key, value):
         score = tf.matmul(query, key, transpose_b=True)
@@ -30,7 +28,7 @@ class MultiHeadSelfAttention(layers.Layer):
         x = tf.reshape(x, (batch_size, -1, self.num_heads, self.projection_dim))
         return tf.transpose(x, perm=[0, 2, 1, 3])
 
-    def call(self, inputs):
+    def __call__(self, inputs):
         # x.shape = [batch_size, seq_len, embedding_dim]
         batch_size = tf.shape(inputs)[0]
         query = self.query_dense(inputs)  # (batch_size, seq_len, embed_dim)
@@ -57,19 +55,19 @@ class MultiHeadSelfAttention(layers.Layer):
         )  # (batch_size, seq_len, embed_dim)
         return output
 
-class TransformerBlock(layers.Layer):
+class TransformerBlock(tf.keras.layers.Layer):
     def __init__(self, embed_dim, num_heads, ff_dim, rate=0.1):
         super(TransformerBlock, self).__init__()
         self.att = MultiHeadSelfAttention(embed_dim, num_heads)
-        self.ffn = keras.Sequential(
-            [layers.Dense(ff_dim, activation="relu"), layers.Dense(embed_dim),]
+        self.ffn = tf.keras.Sequential(
+            [tf.keras.layers.Dense(ff_dim, activation="relu"), tf.keras.layers.Dense(embed_dim),]
         )
-        self.layernorm1 = layers.LayerNormalization(epsilon=1e-6)
-        self.layernorm2 = layers.LayerNormalization(epsilon=1e-6)
-        self.dropout1 = layers.Dropout(rate)
-        self.dropout2 = layers.Dropout(rate)
+        self.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.dropout1 = tf.keras.layers.Dropout(rate)
+        self.dropout2 = tf.keras.layers.Dropout(rate)
 
-    def call(self, inputs, training):
+    def __call__(self, inputs, training):
         attn_output = self.att(inputs)
         attn_output = self.dropout1(attn_output, training=training)
         out1 = self.layernorm1(inputs + attn_output)
@@ -77,13 +75,13 @@ class TransformerBlock(layers.Layer):
         ffn_output = self.dropout2(ffn_output, training=training)
         return self.layernorm2(out1 + ffn_output)
 
-class TokenAndPositionEmbedding(layers.Layer):
+class TokenAndPositionEmbedding(tf.keras.layers.Layer):
     def __init__(self, maxlen, vocab_size, emded_dim):
         super(TokenAndPositionEmbedding, self).__init__()
-        self.token_emb = layers.Embedding(input_dim=vocab_size, output_dim=emded_dim)
-        self.pos_emb = layers.Embedding(input_dim=maxlen, output_dim=emded_dim)
+        self.token_emb = tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=emded_dim)
+        self.pos_emb = tf.keras.layers.Embedding(input_dim=maxlen, output_dim=emded_dim)
 
-    def call(self, x):
+    def __call__(self, x):
         maxlen = tf.shape(x)[-1]
         positions = tf.range(start=0, limit=maxlen, delta=1)
         positions = self.pos_emb(positions)
