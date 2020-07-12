@@ -1,6 +1,6 @@
 import tensorflow as tf
 from transformers_utils import *
-
+### transformer code change kro !
 class VanillaTransformer():
     def __init__(self, config, embedding_matrix=None, is_embedding_trainable=False, is_position_embedding_trainable=False):
         if embedding_matrix is None:
