@@ -4,7 +4,8 @@
 [![Downloads](https://pepy.tech/badge/model-x/month)](https://pepy.tech/project/model-x/month)
 [![Downloads](https://pepy.tech/badge/model-x/week)](https://pepy.tech/project/model-x/week)
 
-Model_X package is a collection of different NLP architecture models.
+Model_X provides keras-layer like state-of-the-art general-purpose architectures for Natural Language Understanding (NLU) and Natural Language Generation (NLG).
+
 
 # Implementation
 
